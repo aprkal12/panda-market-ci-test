@@ -10,42 +10,61 @@ jobs:
     steps:
       - name: EC2 배포
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
         with:
           host: ${{ secrets.AWS_HOST }}
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_KEY }}
           port: 2222 # sk broadband 22번 포트 차단 이슈 -> ec2도 ssh 2222로 세팅 변경
+          envs: ENV_FILE
           script: |
             set -e
             set +x
 
-            PROJECT_PATH="/home/${{ secrets.AWS_USERNAME }}/panda-market"
+            # 0. 환경변수 로드
+            [ -f ~/.zshrc ] && source ~/.zshrc
+            [ -f ~/.bash_profile ] && source ~/.bash_profile
+            [ -f ~/.bashrc ] && source ~/.bashrc
 
+            # 1. 경로 변수 설정
+            PROJECT_PATH="/home/${{ secrets.AWS_USERNAME }}/panda-market"
+            echo "👉 [Step 1] 배포 경로: $PROJECT_PATH 확인 중..."
+
+            # 2. 폴더 체크 및 클론/풀 (GitHub Token 사용)
             if [ ! -d "$PROJECT_PATH" ]; then
-              git clone https://github.com/${{ github.repository }} $PROJECT_PATH
+              echo "📂 폴더가 없습니다. 토큰을 사용하여 복제(Clone)합니다..."
+              git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} $PROJECT_PATH
+              cd $PROJECT_PATH
+            else
+              echo "📂 폴더가 존재합니다. 토큰을 사용하여 업데이트(Pull)합니다..."
+              cd $PROJECT_PATH
+              git pull https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main
             fi
 
-            cd $PROJECT_PATH
-            git pull origin main
+            # 3. .env 생성 (가장 안전한 방식)
+            echo "👉 [Step 2] .env 생성 및 의존성 설치..."
             cd panda-market
 
-            printf "%s" "${{ secrets.ENV_FILE }}" > .env
+            # 👇 [수정 3] 이제 내용물을 직접 쓰는 게 아니라, 변수($ENV_FILE)를 사용합니다.
+            echo "$ENV_FILE" > .env
 
-            echo "👉 Installing dependencies..."
             npm ci --silent --no-progress 2>npm_err.log || {
               echo "❌ npm ci 실패:"
               tail -n 20 npm_err.log
               exit 1
             }
 
-            echo "👉 Building..."
+            # 4. 빌드
+            echo "👉 [Step 3] 빌드를 시작합니다..."
             npm run build --silent 2>build_err.log || {
               echo "❌ build 실패:"
               tail -n 20 build_err.log
               exit 1
             }
 
-            echo "👉 Restarting server..."
+            # 5. 서버 재시작
+            echo "👉 [Step 4] 서버를 재시작합니다 (PM2)..."
             pm2 reload panda-market || pm2 start dist/app.js --name "panda-market"
 
             echo "🎉 배포 성공!"
