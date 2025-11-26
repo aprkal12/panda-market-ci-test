@@ -33,15 +33,15 @@ jobs:
             PROJECT_PATH="/home/${{ secrets.AWS_USERNAME }}/panda-market"
             echo "👉 [Step 1] 배포 경로: $PROJECT_PATH"
 
-            # 2. 폴더 체크 및 클론/풀
+            # 2. 폴더가 있는지 확인하고 분기 처리
             if [ ! -d "$PROJECT_PATH" ]; then
-              echo "📂 폴더가 없습니다. 토큰을 사용하여 복제(Clone)합니다..."
-              git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} $PROJECT_PATH
+              echo "📂 폴더가 없습니다. 깃허브에서 프로젝트를 복제(Clone)합니다..."
+              git clone https://github.com/${{ github.repository }} $PROJECT_PATH
               cd $PROJECT_PATH
             else
-              echo "📂 폴더가 존재합니다. 토큰을 사용하여 업데이트(Pull)합니다..."
+              echo "📂 폴더가 이미 존재합니다. 최신 코드로 업데이트(Pull)합니다..."
               cd $PROJECT_PATH
-              git pull https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main
+              git pull origin main
             fi
             
             # 3. 프로젝트 환경변수 로드
