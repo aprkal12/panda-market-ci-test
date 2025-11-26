@@ -16,28 +16,34 @@ jobs:
           key: ${{ secrets.AWS_KEY }}
           port: 2222 # sk broadband 22번 포트 차단 이슈 -> ec2도 ssh 2222로 세팅 변경
           script: |
-            # 1. 에러 발생 시 즉시 중단 (안전장치)
             set -e
 
-            # 2. 프로젝트 폴더로 이동
-            echo "👉 [Step 1] 프로젝트 폴더로 이동합니다."
-            cd /home/ubuntu/panda-market
+            # 1. 경로 변수 설정
+            PROJECT_PATH="/home/ec2-user/panda-market"
+            echo "👉 [Step 1] 배포 경로: $PROJECT_PATH 확인 중..."
 
-            # 3. 최신 코드 받기
-            echo "👉 [Step 2] 최신 코드를 받아옵니다 (Git Pull)..."
-            git pull origin main
+            # 2. 폴더가 있는지 확인하고 분기 처리
+            if [ ! -d "$PROJECT_PATH" ]; then
+              echo "📂 폴더가 없습니다. 깃허브에서 프로젝트를 복제(Clone)합니다..."
+              git clone https://github.com/${{ github.repository }} $PROJECT_PATH
+              cd $PROJECT_PATH
+            else
+              echo "📂 폴더가 이미 존재합니다. 최신 코드로 업데이트(Pull)합니다..."
+              cd $PROJECT_PATH
+              git pull origin main
+            fi
 
-            # 4. 의존성 설치
-            echo "👉 [Step 3] 의존성을 설치합니다 (npm ci)..."
+            # 3. 의존성 설치
+            echo "👉 [Step 2] 의존성을 설치합니다 (npm ci)..."
             cd panda-market
             npm ci
 
-            # 5. 빌드
-            echo "👉 [Step 4] 빌드를 시작합니다..."
+            # 4. 빌드
+            echo "👉 [Step 3] 빌드를 시작합니다..."
             npm run build
 
-            # 6. 서버 재시작
-            echo "👉 [Step 5] 서버를 재시작합니다 (PM2)..."
+            # 5. 서버 재시작
+            echo "👉 [Step 4] 서버를 재시작합니다 (PM2)..."
             pm2 reload panda-market || pm2 start dist/app.js --name "panda-market"
 
-            echo "🎉 모든 배포 과정이 성공적으로 완료되었습니다!"
+            echo "🎉 배포 성공!"
