@@ -1,4 +1,4 @@
-name: PR Test
+name: Test before PR
 run-name: PR Test by ${{github.actor}}
 on:
   pull_request:
