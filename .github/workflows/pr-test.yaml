@@ -45,7 +45,7 @@ jobs:
 
       - name: 4. 환경변수 설정
         run: |
-          echo echo "DATABASE_URL=postgresql://postgres:password@localhost:5432/postgres?schema=public" >> .env.test
+          echo "DATABASE_URL=postgresql://postgres:password@localhost:5432/postgres?schema=public" >> .env.test
           echo "REDIS_URL=redis://localhost:6379" >> .env.test
 
           echo "JWT_ACCESS_TOKEN_SECRET=test" >> .env.test
