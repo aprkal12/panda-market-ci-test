@@ -41,6 +41,7 @@ jobs:
             # 3. 의존성 설치
             echo "👉 [Step 2] 의존성을 설치합니다 (npm ci)..."
             cd panda-market
+            echo "${{ secrets.ENV_FILE }}" > .env
             npm ci
 
             # 4. 빌드
