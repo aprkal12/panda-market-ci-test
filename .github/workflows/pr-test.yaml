@@ -72,8 +72,10 @@ jobs:
           echo "PORT=3000" >> .env.test
           echo "NODE_ENV=test" >> .env.test
 
+          cat .env.test >> $GITHUB_ENV
+
       - name: 5. DB 스키마 동기화
-        run: npx dotenv -e .env.test -- npx prisma db push
+        run: npx prisma db push
 
       - name: 6. 테스트 실행
         run: npm run test
