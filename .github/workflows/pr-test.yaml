@@ -8,6 +8,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: ./panda-market
+
     services:
       postgres:
         image: postgres:latest
@@ -38,7 +42,6 @@ jobs:
 
       - name: 3. 의존성 설치
         run: npm ci
-        working-directory: ./panda-market
 
       - name: 4. 환경변수 설정
         run: |
