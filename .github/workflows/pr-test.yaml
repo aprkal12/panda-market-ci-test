@@ -1,4 +1,4 @@
-name: PR Test
+name: Test before PR
 run-name: PR Test by ${{github.actor}}
 on:
   pull_request:
@@ -7,6 +7,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./panda-market
 
     services:
       postgres:
@@ -41,7 +45,7 @@ jobs:
 
       - name: 4. 환경변수 설정
         run: |
-          echo echo "DATABASE_URL=postgresql://postgres:password@localhost:5432/postgres?schema=public" >> .env.test
+          echo "DATABASE_URL=postgresql://postgres:password@localhost:5432/postgres?schema=public" >> .env.test
           echo "REDIS_URL=redis://localhost:6379" >> .env.test
 
           echo "JWT_ACCESS_TOKEN_SECRET=test" >> .env.test
@@ -68,8 +72,10 @@ jobs:
           echo "PORT=3000" >> .env.test
           echo "NODE_ENV=test" >> .env.test
 
+          cat .env.test >> $GITHUB_ENV
+
       - name: 5. DB 스키마 동기화
-        run: npx dotenv -e .env.test -- npx prisma db push
+        run: npx prisma db push
 
       - name: 6. 테스트 실행
         run: npm run test

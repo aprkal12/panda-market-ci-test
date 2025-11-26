@@ -1,0 +1,43 @@
+name: Deploy to AWS EC2
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: EC2 배포
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_KEY }}
+          port: 22
+          script: |
+            # 1. 에러 발생 시 즉시 중단 (안전장치)
+            set -e
+
+            # 2. 프로젝트 폴더로 이동
+            echo "👉 [Step 1] 프로젝트 폴더로 이동합니다."
+            cd /home/ubuntu/panda-market
+
+            # 3. 최신 코드 받기
+            echo "👉 [Step 2] 최신 코드를 받아옵니다 (Git Pull)..."
+            git pull origin main
+
+            # 4. 의존성 설치
+            echo "👉 [Step 3] 의존성을 설치합니다 (npm ci)..."
+            cd panda-market
+            npm ci
+
+            # 5. 빌드
+            echo "👉 [Step 4] 빌드를 시작합니다..."
+            npm run build
+
+            # 6. 서버 재시작
+            echo "👉 [Step 5] 서버를 재시작합니다 (PM2)..."
+            pm2 reload panda-market || pm2 start dist/app.js --name "panda-market"
+
+            echo "🎉 모든 배포 과정이 성공적으로 완료되었습니다!"

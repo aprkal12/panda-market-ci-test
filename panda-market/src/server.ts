@@ -26,6 +26,7 @@ async function startServer() {
   📚  Swagger:   ${BASE_URL}/docs
   
   ################################################
+  ci test
     `);
   });
 }
