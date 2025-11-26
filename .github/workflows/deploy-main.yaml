@@ -14,7 +14,7 @@ jobs:
           host: ${{ secrets.AWS_HOST }}
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_KEY }}
-          port: 22
+          port: 2222 # sk broadband 22번 포트 차단 이슈 -> ec2도 ssh 2222로 세팅 변경
           script: |
             # 1. 에러 발생 시 즉시 중단 (안전장치)
             set -e
