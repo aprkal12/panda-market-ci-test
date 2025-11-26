@@ -17,34 +17,35 @@ jobs:
           port: 2222 # sk broadband 22번 포트 차단 이슈 -> ec2도 ssh 2222로 세팅 변경
           script: |
             set -e
-            set -x   # ★ 로그 전체 출력 (필수)
+            set +x
 
             PROJECT_PATH="/home/${{ secrets.AWS_USERNAME }}/panda-market"
 
-            # 환경변수 로드
-            [ -f ~/.zshrc ] && source ~/.zshrc
-            [ -f ~/.bash_profile ] && source ~/.bash_profile
-            [ -f ~/.bashrc ] && source ~/.bashrc
-
-            echo "👉 배포 시작"
-
             if [ ! -d "$PROJECT_PATH" ]; then
-              echo "📂 프로젝트 폴더 없음 → clone"
               git clone https://github.com/${{ github.repository }} $PROJECT_PATH
             fi
 
             cd $PROJECT_PATH
             git pull origin main
-
-            # 하위 폴더 이동
             cd panda-market
 
-            # .env 생성 (printf 사용)
             printf "%s" "${{ secrets.ENV_FILE }}" > .env
 
-            npm ci
-            npm run build
+            echo "👉 Installing dependencies..."
+            npm ci --silent --no-progress 2>npm_err.log || {
+              echo "❌ npm ci 실패:"
+              tail -n 20 npm_err.log
+              exit 1
+            }
 
+            echo "👉 Building..."
+            npm run build --silent 2>build_err.log || {
+              echo "❌ build 실패:"
+              tail -n 20 build_err.log
+              exit 1
+            }
+
+            echo "👉 Restarting server..."
             pm2 reload panda-market || pm2 start dist/app.js --name "panda-market"
 
-            echo "🎉 배포 완료"
+            echo "🎉 배포 성공!"
