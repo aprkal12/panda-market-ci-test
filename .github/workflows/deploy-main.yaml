@@ -19,12 +19,11 @@ jobs:
           port: 2222 # sk broadband 22번 포트 차단 이슈 -> ec2도 ssh 2222로 세팅 변경
           envs: ENV_FILE
           script: |
-            # 에러 나면 즉시 멈추되, 로그는 최대한 자세히 찍도록 설정
             set -e
 
             echo "🚀 배포 스크립트 시작!"
 
-            # 0. 환경변수 로드 (수정됨: 파일이 없어도 죽지 않도록 || true 추가)
+            # 0. ec2 환경변수 로드
             echo "👉 환경변수 로드 시도..."
             [ -f ~/.zshrc ] && source ~/.zshrc || true
             [ -f ~/.bash_profile ] && source ~/.bash_profile || true
@@ -44,22 +43,17 @@ jobs:
               cd $PROJECT_PATH
               git pull https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main
             fi
-
-            # 3. .env 생성
+            
+            # 3. 프로젝트 환경변수 로드
             echo "👉 [Step 2] .env 생성 중..."
             cd panda-market
             echo "$ENV_FILE" > .env
 
-            # 4. 의존성 설치 (로그 자세히 보기 위해 --silent 제거)
-            echo "👉 [Step 3] 의존성 설치 (npm ci)..."
-            npm ci
-
-            # 5. 빌드
-            echo "👉 [Step 4] 빌드 시작..."
-            npm run build
-
-            # 6. 서버 재시작
-            echo "👉 [Step 5] 서버 재시작 (PM2)..."
-            pm2 reload panda-market || pm2 start dist/app.js --name "panda-market"
+            # 4. pm2 스크립트 실행
+            echo "👉 [Step 3] start:pm2 스크립트 실행..."
+            
+            chmod +x infra/ec2/start.sh
+            
+            npm run start:pm2
 
             echo "🎉 배포 성공!"
