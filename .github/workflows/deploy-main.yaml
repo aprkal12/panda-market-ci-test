@@ -73,9 +73,9 @@ jobs:
 
             echo "👉 최신 이미지 Pull 및 컨테이너 재시작..."
 
-            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yaml pull
 
-            docker compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yaml up -d
 
             docker image prune -f
 
