@@ -54,7 +54,7 @@ jobs:
 
             echo "🚀 배포 시작! (Docker & ECR)"
 
-            PROJECT_PATH="/home/${{ secrets.AWS_USERNAME }}/panda-market"
+            PROJECT_PATH="/home/${{ secrets.AWS_USERNAME }}/deploy"
 
             if [ ! -d "$PROJECT_PATH" ]; then
               git clone https://github.com/${{ github.repository }} $PROJECT_PATH
@@ -62,6 +62,8 @@ jobs:
 
             cd $PROJECT_PATH
             git pull origin main # 코드 최신화
+
+            cd panda-market
 
             echo "$ENV_FILE" > .env
             echo "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID" >> .env
