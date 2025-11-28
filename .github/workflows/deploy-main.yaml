@@ -54,7 +54,7 @@ jobs:
 
             echo "🚀 배포 시작! (Docker & ECR)"
 
-            PROJECT_PATH="/home/${{ secrets.AWS_USERNAME }}/panda-market/panda-market"
+            PROJECT_PATH="/home/${{ secrets.AWS_USERNAME }}/panda-market"
 
             if [ ! -d "$PROJECT_PATH" ]; then
               git clone https://github.com/${{ github.repository }} $PROJECT_PATH
