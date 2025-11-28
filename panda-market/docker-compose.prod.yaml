@@ -1,4 +1,4 @@
-crname: panda-market-prod
+name: panda-market-prod
 services:
   server:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.ap-northeast-2.amazonaws.com/panda-market-ecr:latest
