@@ -66,7 +66,6 @@ jobs:
             cd panda-market
 
             echo "$ENV_FILE" > .env
-            echo "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID" >> .env
 
             echo "👉 ECR 로그인 중..."
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
